@@ -82,7 +82,18 @@ func acceptLoop(ctx context.Context, group *errgroup.Group, network, writeAddr, 
 			}
 			defer writer.Close()
 
-			_, err = io.Copy(writer, conn)
+			var connGroup errgroup.Group
+			connGroup.Go(func() error {
+				_, err = io.Copy(writer, conn)
+				return err
+			})
+
+			connGroup.Go(func() error {
+				_, err = io.Copy(conn, writer)
+				return err
+			})
+
+			err = connGroup.Wait()
 			if err != nil {
 				log.Printf("copy %s to %s %s: %s", readAddr, writeAddr, network, err)
 			}
