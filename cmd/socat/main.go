@@ -75,21 +75,21 @@ func acceptLoop(ctx context.Context, group *errgroup.Group, network, writeAddr, 
 		group.Go(func() error {
 			defer conn.Close()
 
-			writer, err := d.DialContext(ctx, network, writeAddr)
+			upstream, err := d.DialContext(ctx, network, writeAddr)
 			if err != nil {
 				log.Printf("dial %s %s: %s", writeAddr, network, err)
 				return nil
 			}
-			defer writer.Close()
+			defer upstream.Close()
 
 			var connGroup errgroup.Group
 			connGroup.Go(func() error {
-				_, err = io.Copy(writer, conn)
+				_, err = io.Copy(upstream, conn)
 				return err
 			})
 
 			connGroup.Go(func() error {
-				_, err = io.Copy(conn, writer)
+				_, err = io.Copy(conn, upstream)
 				return err
 			})
 
