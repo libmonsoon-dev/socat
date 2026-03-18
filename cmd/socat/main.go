@@ -14,6 +14,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/panjf2000/gnet/pkg/pool/byteslice"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -192,6 +193,7 @@ func (p *udpProxy) read(session *udpSession) error {
 			if n != len(buf) {
 				panic("short write")
 			}
+			byteslice.Put(buf)
 
 			if err != nil {
 				return fmt.Errorf("write from %s: %w", session.addr.String(), err)
@@ -274,8 +276,7 @@ func udpAcceptLoop(ctx context.Context, group *errgroup.Group, writeAddr, readAd
 			return err
 		}
 
-		//TODO: buf pool
-		buf := make([]byte, maxDatagramSize)
+		buf := byteslice.Get(maxDatagramSize)
 		n, addr, err := reader.ReadFrom(buf)
 		if err != nil {
 			log.Printf("Read from udp listener from %s: %s", addr, err)
