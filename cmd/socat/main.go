@@ -67,6 +67,11 @@ func acceptLoop(ctx context.Context, group *errgroup.Group, network, writeAddr, 
 	defer reader.Close()
 
 	for {
+		err = ctx.Err()
+		if err != nil {
+			return err
+		}
+
 		conn, err := reader.Accept()
 		if err != nil {
 			return fmt.Errorf("accept %s: %w", network, err)
