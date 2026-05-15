@@ -46,8 +46,7 @@ func main() {
 		ReadTCP:  readTCP,
 		WriteTCP: writeTCP,
 		Controller: controller.Config{
-			Address:   controllerAddr,
-			AuthToken: getEnv("SOCAT_CONTROLLER_AUTH_TOKEN"),
+			Address: controllerAddr,
 		},
 	}
 
@@ -64,6 +63,10 @@ func main() {
 	default:
 		flag.Usage()
 		os.Exit(1)
+	}
+
+	if conf.Mode == ReverseMasterMode || conf.Mode == ReverseSlaveMode {
+		conf.Controller.AuthToken = getEnv("SOCAT_CONTROLLER_AUTH_TOKEN")
 	}
 
 	group, ctx := errgroup.WithContext(ctx)
